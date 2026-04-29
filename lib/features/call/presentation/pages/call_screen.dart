@@ -32,7 +32,8 @@ class _CallScreenState extends State<CallScreen> {
   final _signallingService = SignallingService.instance;
   final _localRTCVideoRenderer = RTCVideoRenderer();
   final _remoteRTCVideoRenderer = RTCVideoRenderer();
-  final List<RTCIceCandidate> _pendingCandidates = [];
+  final List<RTCIceCandidate> _pendingLocalCandidates = [];
+  final List<RTCIceCandidate> _pendingRemoteCandidates = [];
   final Set<String> _seenRemoteCandidateIds = {};
 
   MediaStream? _localStream;
@@ -85,9 +86,12 @@ class _CallScreenState extends State<CallScreen> {
     };
 
     _rtcPeerConnection!.onIceCandidate = (candidate) {
+      if (candidate.candidate == null || candidate.candidate!.isEmpty) {
+        return;
+      }
       final callId = _callId;
       if (callId == null) {
-        _pendingCandidates.add(candidate);
+        _pendingLocalCandidates.add(candidate);
         return;
       }
       _signallingService.addIceCandidate(
@@ -146,13 +150,12 @@ class _CallScreenState extends State<CallScreen> {
 
       final answer = (data['answer'] as Map?)?.cast<String, dynamic>();
       if (answer != null && !_remoteDescriptionSet) {
-        await _rtcPeerConnection!.setRemoteDescription(
+        await _setRemoteDescription(
           RTCSessionDescription(
             answer['sdp'] as String?,
             answer['type'] as String?,
           ),
         );
-        _remoteDescriptionSet = true;
       }
     });
   }
@@ -172,10 +175,9 @@ class _CallScreenState extends State<CallScreen> {
 
     _watchRemoteCandidates(fromCaller: true);
 
-    await _rtcPeerConnection!.setRemoteDescription(
+    await _setRemoteDescription(
       RTCSessionDescription(offer['sdp'] as String?, offer['type'] as String?),
     );
-    _remoteDescriptionSet = true;
 
     final answer = await _rtcPeerConnection!.createAnswer();
     await _rtcPeerConnection!.setLocalDescription(answer);
@@ -210,13 +212,7 @@ class _CallScreenState extends State<CallScreen> {
               if (data == null) {
                 continue;
               }
-              _rtcPeerConnection?.addCandidate(
-                RTCIceCandidate(
-                  data['candidate'] as String?,
-                  data['sdpMid'] as String?,
-                  data['sdpMLineIndex'] as int?,
-                ),
-              );
+              _addRemoteCandidate(_candidateFromMap(data));
             }
           },
           onError: (Object error, StackTrace stackTrace) {
@@ -229,14 +225,54 @@ class _CallScreenState extends State<CallScreen> {
         );
   }
 
-  Future<void> _flushPendingCandidates() async {
-    final callId = _callId;
-    if (callId == null || _pendingCandidates.isEmpty) {
+  Future<void> _setRemoteDescription(RTCSessionDescription description) async {
+    await _rtcPeerConnection!.setRemoteDescription(description);
+    _remoteDescriptionSet = true;
+    await _flushRemoteCandidates();
+  }
+
+  RTCIceCandidate _candidateFromMap(Map<String, dynamic> data) {
+    final lineIndex = data['sdpMLineIndex'];
+    return RTCIceCandidate(
+      data['candidate'] as String?,
+      data['sdpMid'] as String?,
+      lineIndex is int ? lineIndex : int.tryParse('$lineIndex'),
+    );
+  }
+
+  Future<void> _addRemoteCandidate(RTCIceCandidate candidate) async {
+    if (!_remoteDescriptionSet) {
+      _pendingRemoteCandidates.add(candidate);
       return;
     }
 
-    final candidates = List<RTCIceCandidate>.from(_pendingCandidates);
-    _pendingCandidates.clear();
+    try {
+      await _rtcPeerConnection?.addCandidate(candidate);
+    } catch (error, stackTrace) {
+      log('Failed to add ICE candidate', error: error, stackTrace: stackTrace);
+    }
+  }
+
+  Future<void> _flushRemoteCandidates() async {
+    if (!_remoteDescriptionSet || _pendingRemoteCandidates.isEmpty) {
+      return;
+    }
+
+    final candidates = List<RTCIceCandidate>.from(_pendingRemoteCandidates);
+    _pendingRemoteCandidates.clear();
+    for (final candidate in candidates) {
+      await _addRemoteCandidate(candidate);
+    }
+  }
+
+  Future<void> _flushPendingCandidates() async {
+    final callId = _callId;
+    if (callId == null || _pendingLocalCandidates.isEmpty) {
+      return;
+    }
+
+    final candidates = List<RTCIceCandidate>.from(_pendingLocalCandidates);
+    _pendingLocalCandidates.clear();
     for (final candidate in candidates) {
       await _signallingService.addIceCandidate(
         callId: callId,
