@@ -71,22 +71,29 @@ class SignallingService {
         .where('calleeId', isEqualTo: userID)
         .where('status', isEqualTo: 'ringing')
         .snapshots()
-        .listen((snapshot) {
-      for (final change in snapshot.docChanges) {
-        if (change.type == DocumentChangeType.removed) {
-          continue;
-        }
-        final data = change.doc.data();
-        if (data == null) {
-          continue;
-        }
-        onIncomingCall?.call(
-          CallInvite.fromMap({...data, 'callId': change.doc.id}),
+        .listen(
+          (snapshot) {
+            for (final change in snapshot.docChanges) {
+              if (change.type == DocumentChangeType.removed) {
+                continue;
+              }
+              final data = change.doc.data();
+              if (data == null) {
+                continue;
+              }
+              onIncomingCall?.call(
+                CallInvite.fromMap({...data, 'callId': change.doc.id}),
+              );
+            }
+          },
+          onError: (Object error, StackTrace stackTrace) {
+            log(
+              'Incoming call listener failed',
+              error: error,
+              stackTrace: stackTrace,
+            );
+          },
         );
-      }
-    }, onError: (Object error, StackTrace stackTrace) {
-      log('Incoming call listener failed', error: error, stackTrace: stackTrace);
-    });
   }
 
   Future<void> registerUser(String userID) async {
@@ -121,7 +128,6 @@ class SignallingService {
       'calleeId': calleeId,
       'callerName': callerId,
       'type': 'incoming_call',
-      'offer': offer.toMap(),
     };
 
     await callRef.set({

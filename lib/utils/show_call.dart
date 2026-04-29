@@ -14,7 +14,7 @@ Future<void> showCall(
   CallKitParams callKitParams = CallKitParams(
     id: callId,
     nameCaller: caller.name,
-    appName: 'Buzme',
+    appName: 'Call-App',
     avatar: 'https://i.pravatar.cc/100',
     handle: '0123456789',
     type: 0,

@@ -25,6 +25,7 @@ class NotificationUtils {
 
   static GlobalKey<NavigatorState>? _navigatorKey;
   static StreamSubscription<CallEvent?>? _callKitSub;
+  static final Set<String> _shownCallIds = <String>{};
 
   static Future<void> initialize({
     required String userId,
@@ -39,6 +40,7 @@ class NotificationUtils {
       badge: true,
       sound: true,
     );
+    await SignallingService.instance.registerUser(userId);
 
     await _callKitSub?.cancel();
     _callKitSub = FlutterCallkitIncoming.onEvent.listen(_handleCallKitEvent);
@@ -57,7 +59,9 @@ class NotificationUtils {
     }
   }
 
-  static Future<void> showIncomingCallFromData(Map<String, dynamic> data) async {
+  static Future<void> showIncomingCallFromData(
+    Map<String, dynamic> data,
+  ) async {
     if (data['type'] != 'incoming_call') {
       return;
     }
@@ -71,6 +75,10 @@ class NotificationUtils {
   }
 
   static Future<void> showIncomingCall(CallInvite invite) async {
+    if (!_shownCallIds.add(invite.callId)) {
+      return;
+    }
+
     final callKitParams = CallKitParams(
       id: invite.callId,
       nameCaller: invite.callerName ?? invite.callerId,

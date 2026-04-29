@@ -1,1 +1,43 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"call-app-f357d","appId":"1:161646514333:android:fd9eb301cc4d71c43d8474","fileOutput":"android/app/google-services.json"}},"ios":{"default":{"projectId":"call-app-f357d","appId":"1:161646514333:ios:30e65c3d4a1ded9d3d8474","uploadDebugSymbols":false,"fileOutput":"ios/Runner/GoogleService-Info.plist"}},"macos":{"default":{"projectId":"call-app-f357d","appId":"1:161646514333:ios:30e65c3d4a1ded9d3d8474","uploadDebugSymbols":false,"fileOutput":"macos/Runner/GoogleService-Info.plist"}},"dart":{"lib/firebase_options.dart":{"projectId":"call-app-f357d","configurations":{"android":"1:161646514333:android:fd9eb301cc4d71c43d8474","ios":"1:161646514333:ios:30e65c3d4a1ded9d3d8474","macos":"1:161646514333:ios:30e65c3d4a1ded9d3d8474","web":"1:161646514333:web:b890d477b605910c3d8474"}}}}}}
+{
+  "functions": {
+    "source": "functions"
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "call-app-f357d",
+          "appId": "1:161646514333:android:fd9eb301cc4d71c43d8474",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "call-app-f357d",
+          "appId": "1:161646514333:ios:30e65c3d4a1ded9d3d8474",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "macos": {
+        "default": {
+          "projectId": "call-app-f357d",
+          "appId": "1:161646514333:ios:30e65c3d4a1ded9d3d8474",
+          "uploadDebugSymbols": false,
+          "fileOutput": "macos/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "call-app-f357d",
+          "configurations": {
+            "android": "1:161646514333:android:fd9eb301cc4d71c43d8474",
+            "ios": "1:161646514333:ios:30e65c3d4a1ded9d3d8474",
+            "macos": "1:161646514333:ios:30e65c3d4a1ded9d3d8474",
+            "web": "1:161646514333:web:b890d477b605910c3d8474"
+          }
+        }
+      }
+    }
+  }
+}

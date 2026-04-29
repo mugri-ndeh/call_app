@@ -106,8 +106,9 @@ class _JoinScreenState extends State<JoinScreen> {
                       icon: const Icon(Icons.video_call),
                       label: const Text('Invite'),
                       onPressed: () {
-                        final calleeId =
-                            remoteCallerIdTextEditingController.text.trim();
+                        final calleeId = remoteCallerIdTextEditingController
+                            .text
+                            .trim();
                         if (calleeId.isEmpty) {
                           return;
                         }

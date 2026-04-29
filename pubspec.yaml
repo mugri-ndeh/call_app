@@ -42,7 +42,6 @@ dependencies:
   flutter_webrtc: ^1.0.0
   flutter_callkit_incoming: ^2.5.8
   firebase_messaging: ^16.0.0
-  socket_io_client: ^1.0.2
 
 dev_dependencies:
   flutter_test:
